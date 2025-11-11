@@ -1,0 +1,33 @@
+[project]
+name = "ambient-agent"
+version = "0.1.0"
+description = "This is an ambient agent that can be integrated within slack to provide routine updates on AWS monitoring and resource utilization across accounts"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Core AWS and Bedrock dependencies
+    "boto3",
+    "botocore",
+    "bedrock-agentcore",
+    "bedrock-agentcore-starter-toolkit",
+    # LangChain dependencies
+    "langchain-core",
+    "langchain-aws",
+    "langgraph",
+    # Configuration and utilities
+    "pyyaml",
+    "python-dotenv",
+    "pyjwt[crypto]",
+    # Observability
+    "opentelemetry-instrumentation",
+    "opentelemetry-api",
+    "zmq>=0.0.0",
+    "langchain>=1.0.5",
+]
+
+[tool.uv]
+dev-dependencies = [
+    # Infrastructure deployment (only needed for development)
+    "aws-cdk-lib",
+    "constructs",
+]

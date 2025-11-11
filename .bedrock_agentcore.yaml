@@ -1,0 +1,52 @@
+default_agent: ambient_agent
+agents:
+  ambient_agent:
+    name: ambient_agent
+    entrypoint: /Users/madhurpt/Desktop/ambient_agent/ambient_agent.py
+    deployment_type: direct_code_deploy
+    runtime_type: PYTHON_3_12
+    platform: linux/arm64
+    container_runtime: null
+    source_path: /Users/madhurpt/Desktop/ambient_agent
+    aws:
+      execution_role: arn:aws:iam::218208277580:role/AmazonBedrockAgentCoreSDKRuntime-us-west-2-51820286cd
+      execution_role_auto_create: false
+      account: '218208277580'
+      region: us-west-2
+      ecr_repository: null
+      ecr_auto_create: false
+      s3_path: s3://bedrock-agentcore-codebuild-sources-218208277580-us-west-2
+      s3_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: ambient_agent-GdSzEe2MzI
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:218208277580:runtime/ambient_agent-GdSzEe2MzI
+      agent_session_id: 24bf2c4e-3a70-4415-b641-74d5755f3b2a
+    codebuild:
+      project_name: null
+      execution_role: null
+      source_bucket: null
+    memory:
+      mode: NO_MEMORY
+      memory_id: null
+      memory_arn: null
+      memory_name: null
+      event_expiry_days: 30
+      first_invoke_memory_check_done: false
+      was_created_by_toolkit: false
+    authorizer_configuration:
+      customJWTAuthorizer:
+        discoveryUrl: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_JY9hA8MSB/.well-known/openid-configuration
+        allowedClients:
+        - us65bl9tcmaghof9g6e5pfmui
+    request_header_configuration: null
+    oauth_configuration: null
