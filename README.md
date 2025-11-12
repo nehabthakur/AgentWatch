@@ -14,6 +14,8 @@ If we think about the UI/UX experience, there should be two characteristics that
 
 ![architecture](img/architecture.png)
 
+**Medium blog**: https://medium.com/@madhur.prashant7/agentwatch-an-ambient-aws-resource-monitoring-agent-d559e2e90051
+
 The characteristics above are what defines an **ambient agent** (as referred by LangChain [here](https://blog.langchain.com/introducing-ambient-agents/#:~:text=Ambient%20agents%20listen%20to%20an%20event%20stream%20and%20act%20on%20it%20accordingly%2C%20potentially%20acting%20on%20multiple%20events%20at%20a%20time)):
 
 ```
