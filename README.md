@@ -12,6 +12,8 @@ If we think about the UI/UX experience, there should be two characteristics that
 
 2. **Parallel processing**: It should allow for multiple agents running in parallel to accomplish a task, with a human in the loop capability.
 
+![architecture](img/architecture.png)
+
 The characteristics above are what defines an **ambient agent** (as referred by LangChain [here](https://blog.langchain.com/introducing-ambient-agents/#:~:text=Ambient%20agents%20listen%20to%20an%20event%20stream%20and%20act%20on%20it%20accordingly%2C%20potentially%20acting%20on%20multiple%20events%20at%20a%20time)):
 
 ```
