@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Union, Dict, Optional
 
 import yaml
+import boto3
+from boto3 import Session
 
 
 # set a logger

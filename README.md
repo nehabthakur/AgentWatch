@@ -130,10 +130,16 @@ Save the following values from your Cognito configuration:
 - Resource Server ID (if using custom scopes)
 - User Pool ID, Client ID, and user credentials (for username/password auth)
 
-In this example, we use the following:
+First, install the dependencies:
 
+```bash
+uv sync
 ```
-python idp_setup/setup_cognito.py
+
+Then run the Cognito setup script:
+
+```bash
+uv run python idp_setup/setup_cognito.py
 ```
 
 The results will be stored in a `cognito_config.json` file. 
@@ -143,39 +149,100 @@ The results will be stored in a `cognito_config.json` file.
 Before deploying to AgentCore Runtime, test the agent locally to ensure it works correctly with your AWS environment.
 
 1. Clone this repository and navigate to the project directory
-2. Install dependencies using `uv`:
-   ```bash
-   uv sync
-   ```
-3. Configure your AWS credentials and ensure you have access to CloudWatch, Lambda, and other services the agent will monitor
-4. Run the agent locally:
+2. Configure your AWS credentials and ensure you have access to CloudWatch, Lambda, and other services the agent will monitor
+3. Run the agent locally:
    ```bash
    uv run python ambient_agent.py
    ```
-5. Test the agent by sending sample prompts and verifying it can access your AWS resources
+4. Test the agent by sending sample prompts:
+
+   Open another terminal in the same directory and start a Python interactive session:
+   ```bash
+   uv run python3
+   ```
+
+   Then test the agent with sample prompts:
+   ```python
+   >>> from ambient_agent import agent_handler
+   >>> response = agent_handler({"prompt": "List my CloudWatch dashboards", "session_id": "test"})
+   >>> print(response)
+   ```
+
+   Try different prompts to verify the agent can access your AWS resources:
+   ```python
+   >>> response = agent_handler({"prompt": "What is the status of my CloudWatch alarms?", "session_id": "test"})
+   >>> print(response)
+   ```
+
+   Exit the Python session when done:
+   ```python
+   >>> exit()
+   ```
+
+5. Verify that the agent responds appropriately and can successfully query your AWS environment
 
 ### Step 4: Deploy Agent to AgentCore Runtime
 
 Deploy the agent to AgentCore Runtime to make it available as a secure HTTP endpoint.
 
-1. Ensure you have the AgentCore CLI installed and configured
+1. Install the AgentCore CLI in the uv environment:
+   ```bash
+   uv add bedrock-agentcore-starter-toolkit
+   ```
 
 2. Update the `config.yaml` file with your model preferences and tool configurations
 
-3. configure the agent:
+3. Configure the agent:
    ```bash
-   # Follow AgentCore deployment documentation
-   agentcore configure -e ambient_agent.py
+   uv run agentcore configure -e ambient_agent.py
    ```
-   When you run the command above, provide the values for the arn, code/container deployment, name of the agent, enter the credentials information from Step 2 above (use the `cognito_config.json` file for this) and view the `bedrock_agentcore.yaml` file created.
+   When prompted during configuration, provide the following values:
+
+   **Basic Configuration:**
+   - **Agent Name**: `AgentWatch` (or your preferred name)
+   - **Deployment Type**: Choose `direct_code_deploy`
+   - **Execution Role ARN**: Your AWS IAM role ARN for AgentCore Runtime
+
+   **OAuth Configuration** (use values from your `cognito_config.json` file):
+   - **OAuth discovery URL**: Use the `discovery_url` value from your cognito_config.json
+     ```
+     https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXXX/.well-known/openid-configuration
+     ```
+   - **Allowed OAuth client IDs**: Use the `client_id` value from your cognito_config.json
+     ```
+     your_client_id_here
+     ```
+   - **Allowed OAuth audience**: Use the `resource_server_id` value from your cognito_config.json
+     ```
+     your_resource_server_id_here
+     ```
+
+   After configuration completes, verify the `.bedrock_agentcore.yaml` file was created with your settings.
 
 4. Launch the agent on AgentCore Runtime:
+   ```bash
+   uv run agentcore launch
+   ```
 
-```
-agentcore launch
-```
+5. Get the AgentCore Runtime URL for Lambda configuration:
 
-5. After deployment, save the AgentCore Runtime URL - you'll need this for the Lambda configuration
+   After deployment, you need to get the correct runtime URL. Use the provided script:
+   ```bash
+   uv run python get_agent_url.py
+   ```
+
+   When prompted, enter your Bedrock AgentCore ARN from the `.bedrock_agentcore.yaml` file:
+   ```
+   Enter your Bedrock AgentCore ARN: arn:aws:bedrock-agentcore:us-east-1:ACCOUNT_ID:runtime/AgentWatch-XXXXX
+   ```
+
+   The script will output the invocation URL that you'll need for the Lambda configuration:
+   ```
+   Invocation URL:
+   https://bedrock-agentcore.us-east-1.amazonaws.com/runtimes/arn%3Aaws%3A...../invocations?qualifier=DEFAULT
+   ```
+
+   Copy this URL - you'll use it as `AGENTCORE_RUNTIME_URL` in your `.env` file.
 
 ### Step 5: Configure Environment Variables
 
