@@ -314,6 +314,48 @@ Go to your Slack workspace and try the slash command:
 
 The agent should respond with current information from your AWS environment.
 
+## Troubleshooting
+
+### Architecture Mismatch on Apple Silicon Macs (ARM64)
+
+If you encounter an error like this when running the agent:
+
+```
+ImportError: dlopen(.../_pydantic_core.cpython-312-darwin.so, 0x0002): tried: '...'
+(mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
+```
+
+This means your terminal is running under Rosetta (x86_64 emulation) instead of native ARM64 mode. This causes Python packages to be installed for the wrong architecture.
+
+**To verify the issue**, run:
+```bash
+arch
+```
+
+If it shows `i386` or `x86_64` instead of `arm64`, your terminal is running in emulation mode.
+
+**Fix for PyCharm's built-in terminal:**
+
+1. Go to **Settings/Preferences > Tools > Terminal**
+2. Change the **Shell path** from `/bin/zsh` to:
+   ```
+   /usr/bin/arch -arm64 /bin/zsh
+   ```
+3. Close and reopen the terminal tab
+4. Verify with `arch` (should now show `arm64`)
+
+**Fix for macOS Terminal app:**
+
+1. Open Finder and navigate to Applications > Utilities
+2. Right-click on Terminal > **Get Info**
+3. Uncheck **"Open using Rosetta"**
+4. Restart Terminal
+
+**After fixing the terminal**, recreate the virtual environment:
+```bash
+rm -rf .venv && uv venv && uv sync
+```
+
 ## Conclusion
 
 AgentWatch demonstrates how ambient agents can provide continuous, proactive monitoring of infrastructure while maintaining appropriate human oversight through well-designed HITL patterns. By combining scheduled autonomous operation with on-demand interaction capabilities, the system achieves a balance between automation and control that aligns with operational best practices.
