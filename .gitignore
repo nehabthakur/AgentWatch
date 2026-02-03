@@ -19,6 +19,9 @@ wheels/
 .aws/
 *.pem
 *.key
+cognito_config.json
+*_credentials.json
+*_secrets.json
 
 # Bedrock AgentCore cache and config
 .bedrock_agentcore/

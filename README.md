@@ -90,9 +90,107 @@ Before deploying AgentWatch, ensure you have the following:
 
 - **AWS Account** with appropriate permissions to create Lambda functions, IAM roles, EventBridge rules, and API Gateway resources
 - **AWS CLI** installed and configured with credentials
-- **Python 3.11+** for local development and testing
-- **Cognito User Pool** configured with OAuth 2.0 client credentials (M2M authentication recommended) or username/password authentication
+- **Python 3.10+** for local development and AgentCore CLI
 - **Slack Workspace** with permissions to create and configure apps
+- **Cognito User Pool** (for manual deployment only) - configured with OAuth 2.0 client credentials (M2M authentication recommended) or username/password authentication. *Note: CloudFormation deployment creates this automatically.*
+
+### Deployment Options
+
+AgentWatch offers two deployment paths:
+
+| Option | Best For | What It Does |
+|--------|----------|--------------|
+| **CloudFormation (Recommended)** | Quick setup, production deployments | One-click deployment of all AWS resources |
+| **Manual Deployment** | Learning, customization | Step-by-step setup with full control |
+
+---
+
+## Option A: CloudFormation Deployment (Recommended)
+
+The CloudFormation deployment creates all required AWS resources with a single command.
+
+### A1. Create Slack App
+
+1. Go to https://api.slack.com/apps and click **Create New App**
+2. Choose **From scratch**, name it "AgentWatch", select your workspace
+3. Enable **Incoming Webhooks** and add a webhook to your channel
+4. Copy the **Webhook URL**
+5. Go to **Basic Information** and copy the **Signing Secret**
+
+### A2. Deploy CloudFormation Stack
+
+```bash
+cd deployment/cloudformation
+./deploy-stack.sh
+```
+
+The script will prompt for:
+- Slack Webhook URL
+- Slack Signing Secret
+- Cognito Domain Prefix (unique identifier)
+
+### A3. Deploy AgentCore Runtime
+
+```bash
+# From project root
+pip install bedrock-agentcore-starter-toolkit
+agentcore configure -e ambient_agent.py
+agentcore launch --agent AgentWatch
+```
+
+### A4. Update Stack with AgentCore URL
+
+After AgentCore deployment, update the stack with the runtime URL:
+
+```bash
+aws cloudformation update-stack \
+  --stack-name agentwatch \
+  --use-previous-template \
+  --parameters \
+    ParameterKey=SlackWebhookUrl,UsePreviousValue=true \
+    ParameterKey=SlackSigningSecret,UsePreviousValue=true \
+    ParameterKey=CognitoDomainPrefix,UsePreviousValue=true \
+    ParameterKey=AgentCoreRuntimeUrl,ParameterValue="YOUR_AGENTCORE_URL" \
+  --capabilities CAPABILITY_NAMED_IAM
+```
+
+### A5. Configure Slack Slash Command
+
+1. Go to your Slack app → **Slash Commands**
+2. Create `/ask` command
+3. Set Request URL to the `SlackCommandEndpoint` from stack outputs
+4. Save changes
+
+### A6. Add AgentCore Permissions
+
+```bash
+aws iam put-role-policy \
+  --role-name <YOUR_AGENTCORE_ROLE> \
+  --policy-name CloudWatchMonitoringAccess \
+  --policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [{
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:ListDashboards",
+        "cloudwatch:GetDashboard",
+        "logs:DescribeLogGroups",
+        "logs:FilterLogEvents",
+        "logs:GetLogEvents"
+      ],
+      "Resource": "*"
+    }]
+  }'
+```
+
+For more details, see [deployment/cloudformation/README.md](deployment/cloudformation/README.md).
+
+---
+
+## Option B: Manual Deployment
+
+For more control over the deployment process, follow these detailed steps.
 
 ### Step 1: Create and Configure Slack App
 
@@ -313,6 +411,24 @@ Go to your Slack workspace and try the slash command:
 ```
 
 The agent should respond with current information from your AWS environment.
+
+---
+
+## Redeploying After Code Changes
+
+When you make changes to the agent code, redeploy to AgentCore:
+
+```bash
+# Using the provided script
+./deployment/redeploy_agentcore.sh --wait
+
+# Or directly with agentcore CLI
+agentcore launch --agent AgentWatch
+```
+
+The DEFAULT endpoint automatically points to the latest version.
+
+---
 
 ## Troubleshooting
 
